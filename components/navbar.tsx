@@ -2,11 +2,17 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ShoppingCartIcon, Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import {
+  ShoppingCartIcon,
+  Bars3Icon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import logo from "../assets/logo.png";
 import { User2Icon } from "lucide-react";
 import { Button } from "./ui/button";
 import { useCart } from "@/context/CartContext";
 import { supabase } from "@/lib/supabase";
+import Image from "next/image";
 
 export const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -56,28 +62,39 @@ export const Navbar = () => {
 
   // Conditional Rendering
   const isSignedIn = Boolean(userName);
-console.log(userName);
+  console.log(userName);
   return (
     <nav className="sticky top-0 z-50 bg-white shadow">
       <div className="container mx-auto flex items-center justify-between px-4 py-4">
         <Link href="/home" className="hover:text-blue-600 font-bold text-lg">
-          My Ecommerce
+           <Image src={logo} alt="NextCart Logo" width={120} height={40} />
         </Link>
 
         <div className="hidden md:flex items-center space-x-6">
-          <Link href="/home" className="hover:text-blue-600">Home</Link>
-          <Link href="/products" className="hover:text-blue-600">Products</Link>
-          <Link href="/checkout" className="hover:text-blue-600">Checkout</Link>
+          <Link href="/home" className=" font-medium hover:text--600">
+            Home
+          </Link>
+          <Link href="/products" className="font-medium hover:text-blue-600">
+            Products
+          </Link>
+          <Link href="/checkout" className="font-medium hover:text-blue-600">
+            Checkout
+          </Link>
         </div>
 
         <div className="flex items-center space-x-4">
           {isSignedIn ? (
-            <Link href="/profile" className="flex items-center space-x-2 hover:text-blue-600">
+            <Link
+              href="/profile"
+              className="flex items-center space-x-2 hover:text-blue-600"
+            >
               <User2Icon className="h-6 w-6" />
-              <span className="hidden md:inline">{userName}</span>
+              <span className="hidden md:inline font-medium">{userName}</span>
             </Link>
           ) : (
-            <Link href="/signin" className="hover:text-blue-600">Sign In</Link>
+            <Link href="/signin" className="hover:text-blue-600">
+              Sign In
+            </Link>
           )}
 
           <Link href="/checkout" className="relative">
@@ -92,9 +109,13 @@ console.log(userName);
           <Button
             variant="ghost"
             className="md:hidden"
-            onClick={() => setMobileOpen(prev => !prev)}
+            onClick={() => setMobileOpen((prev) => !prev)}
           >
-            {mobileOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
+            {mobileOpen ? (
+              <XMarkIcon className="h-6 w-6" />
+            ) : (
+              <Bars3Icon className="h-6 w-6" />
+            )}
           </Button>
         </div>
       </div>
@@ -103,13 +124,33 @@ console.log(userName);
       {mobileOpen && (
         <nav className="md:hidden bg-white shadow-md">
           <ul className="flex flex-col p-4 space-y-2">
-            <li><Link href="/home" className="block hover:text-blue-600">Home</Link></li>
-            <li><Link href="/products" className="block hover:text-blue-600">Products</Link></li>
-            <li><Link href="/checkout" className="block hover:text-blue-600">Checkout</Link></li>
+            <li>
+              <Link href="/home" className="block hover:text-blue-600">
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link href="/products" className="block hover:text-blue-600">
+                Products
+              </Link>
+            </li>
+            <li>
+              <Link href="/checkout" className="block hover:text-blue-600">
+                Checkout
+              </Link>
+            </li>
             {isSignedIn ? (
-              <li><Link href="/profile" className="block hover:text-blue-600">{userName}</Link></li>
+              <li>
+                <Link href="/profile" className="block hover:text-blue-600">
+                  {userName}
+                </Link>
+              </li>
             ) : (
-              <li><Link href="/signin" className="block hover:text-blue-600">Sign In</Link></li>
+              <li>
+                <Link href="/signin" className="block hover:text-blue-600">
+                  Sign In
+                </Link>
+              </li>
             )}
           </ul>
         </nav>

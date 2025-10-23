@@ -6,12 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 // Define the shape of an order table row
+interface OrderItem {
+  name: string;
+  quantity: number;
+  price?: number;
+}
+
 interface Order {
-  id: string; // UUID
-  user_id: string; // FK to auth.users
-  order_date: string; // timestamp
+  id: string;
+  user_id: string;
+  order_date: string;
   total: number;
-  items: { name: string; quantity: number }[];
+  items: OrderItem[];
 }
 
 // Define Supabase user structure
@@ -35,13 +41,13 @@ export default function ProfilePage() {
           return;
         }
 
-        // Step 1: Get base auth user
+        // 1. Get base auth user
         const currentUser: SupabaseUser = {
           id: data.user.id,
           email: data.user.email ?? "unknown@example.com",
         };
 
-        // Step 2: Fetch from 'profiles' table
+        // 2. Fetch from 'profiles' table
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
           .select("name")
@@ -52,14 +58,10 @@ export default function ProfilePage() {
           console.warn("Error fetching profile:", profileError.message);
         }
 
-        // Step 3: Attach username
-        if (profileData?.name) {
-          currentUser.name = profileData.name;
-        }
-
+        if (profileData?.name) currentUser.name = profileData.name;
         setUser(currentUser);
 
-        // Step 4: Fetch user's orders
+        // 3. Fetch user's orders
         const { data: orderData, error: orderError } = await supabase
           .from("orders")
           .select("*")
@@ -70,7 +72,18 @@ export default function ProfilePage() {
           console.warn("Error fetching orders:", orderError.message);
         }
 
-        setOrders(orderData ?? []);
+        setOrders(
+          (orderData ?? []).map((order) => ({
+            ...order,
+            // Ensure items is always an array
+            items:
+              typeof order.items === "string"
+                ? JSON.parse(order.items || "[]")
+                : Array.isArray(order.items)
+                ? order.items
+                : [],
+          }))
+        );
       } catch (err) {
         console.error("Unexpected error:", err);
       } finally {
@@ -89,7 +102,6 @@ export default function ProfilePage() {
   if (loading) return <p className="p-4">Loading profile...</p>;
   if (!user) return <p className="p-4">Please sign in to view your profile.</p>;
 
-  console.log(user.name);
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
       <h1 className="text-3xl font-bold mb-6">User Profile</h1>
@@ -109,48 +121,7 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
 
-      {/* Past Orders */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Past Orders</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {orders.length === 0 ? (
-            <p>No past orders found.</p>
-          ) : (
-            orders.map((order) => (
-              <div
-                key={order.id}
-                className="border p-4 rounded-lg space-y-2 mb-4"
-              >
-                <p>
-                  <strong>Order ID:</strong> {order.id}
-                </p>
-                <p>
-                  <strong>Date:</strong>{" "}
-                  {new Date(order.order_date).toLocaleDateString()}
-                </p>
-                <p>
-                  <strong>Total:</strong> ₹{order.total}
-                </p>
-
-                <div className="mt-2">
-                  <p className="font-semibold">Items:</p>
-                  <ul className="list-disc list-inside">
-                    {order.items.map((item, index) => (
-                      <li key={index}>
-                        {item.name} × {item.quantity}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            ))
-          )}
-        </CardContent>
-      </Card>
-
-      <Button className="bg-red-600 text-white" onClick={handleSignOut}>
+        <Button className="bg-red-600 text-white" onClick={handleSignOut}>
         Sign Out
       </Button>
     </div>

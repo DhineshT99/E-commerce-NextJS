@@ -27,9 +27,6 @@ export default function SuccessPage() {
     <div className="container mx-auto px-4 py-8 text-center">
       <h1 className="text-3xl font-bold mb-4">Payment Successful!</h1>
       <p>Your order has been placed successfully.</p>
-      <Link href="/profile" className="text-blue-600 hover:underline mt-2 block">
-        View My Orders
-      </Link>
     </div>
   );
 }

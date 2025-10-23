@@ -3,6 +3,7 @@ import { stripe } from "@/lib/stripe";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Carousel } from "@/components/carousel";
+import Stripe from "stripe";
 
 export default async function Home() {
   const products = await stripe.products.list({
@@ -10,13 +11,18 @@ export default async function Home() {
     limit: 5,
   });
 
+    const filteredProducts = products.data.filter(
+    (product): product is Stripe.Product & { default_price: Stripe.Price } =>
+      typeof product.default_price === "object" && product.default_price !== null
+  );
+
   return (
     <div>
       <section className="rounded bg-neutral-100 py-8 sm:py-12">
         <div className="mx-auto grid grid-cols-1 items-center justify-items-center gap-8 px-8 sm:px-16 md:grid-cols-2">
           <div className="max-w-md space-y-4">
             <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-              Welcome to My Ecommerce
+              Welcome to Next Cart!
             </h2>
             <p className="text-neutral-600">
               Discover the latest products at the best prices.
@@ -44,7 +50,7 @@ export default async function Home() {
         </div>
       </section>
       <section className="py-8">
-        <Carousel products={products.data} />
+        <Carousel products={filteredProducts} />
       </section>
     </div>
   );
