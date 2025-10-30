@@ -1,3 +1,4 @@
+// app/signin/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -10,7 +11,7 @@ export default function SignInPage() {
   const [isSignup, setIsSignup] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState(""); // 👈 added for signup
+  const [name, setName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -28,57 +29,40 @@ export default function SignInPage() {
       return;
     }
 
-    if (isSignup) {
-      // ✅ Sign up flow
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
+  if (isSignup) {
+  const { data, error } = await supabase.auth.signUp({ email, password });
 
-      if (error) {
-        setError(error.message);
-        return;
-      }
+  if (error) {
+    setError(error.message);
+    return;
+  }
 
-      if (data.user) {
-        // ✅ Insert or update profile safely
-        const { error: profileError } = await supabase.from("profiles").upsert(
-          {
-            id: data.user.id,
-            name: name,
-            email: email,
-          },
-          { onConflict: "id" } // important: avoid duplicate primary key error
-        );
+  alert("Signup successful! Please verify your email before signing in.");
+  setIsSignup(false);
+  return;
+}
 
-        if (profileError) {
-          console.error("Profile upsert error:", profileError.message);
-        }
-      }
+// Sign-in flow
+if (!isSignup) {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-      alert("Signup successful! Please sign in.");
-      setIsSignup(false);
-      setEmail("");
-      setPassword("");
-      setName("");
-    } else {
-      // ✅ Sign in flow
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+  if (error) {
+    setError(error.message);
+    return;
+  }
 
-      if (error) {
-        setError(error.message);
-        return;
-      }
+  if (data.user) {
+    // ✅ Now safe — user exists in auth.users
+    await supabase.from("profiles").upsert({
+      id: data.user.id,
+      name: name || data.user.email?.split("@")[0],
+      email: data.user.email,
+    });
 
-      if (data.user) {
-        router.push("/home");
-      }
-    }
-  };
-
+    router.push("/home");
+  }
+}
+  }
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="w-full max-w-sm bg-white p-6 rounded-2xl shadow">
@@ -135,7 +119,7 @@ export default function SignInPage() {
 
           {error && <p className="text-red-500 text-sm">{error}</p>}
 
-          <Button type="submit" className="w-full mt-2  bg-black text-white">
+          <Button type="submit" className="w-full mt-2 bg-black text-white">
             {isSignup ? "Sign Up" : "Sign In"}
           </Button>
         </form>

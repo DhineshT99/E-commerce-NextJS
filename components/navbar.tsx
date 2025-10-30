@@ -20,7 +20,7 @@ export const Navbar = () => {
   const { items } = useCart();
   const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
-  // Fetch the active Supabase session and profile info
+  // Fetch user from Supabase
   useEffect(() => {
     async function loadUser() {
       const { data } = await supabase.auth.getUser();
@@ -32,16 +32,13 @@ export const Navbar = () => {
           .eq("id", id)
           .single();
         if (profile?.name) setUserName(profile.name);
-        else setUserName(null);
       } else {
         setUserName(null);
       }
     }
 
-    // initial check
     loadUser();
 
-    // realtime auth listener: auto update on sign in/out
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -60,55 +57,79 @@ export const Navbar = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Conditional Rendering
   const isSignedIn = Boolean(userName);
-  console.log(userName);
+
   return (
-    <nav className="sticky top-0 z-50 bg-white shadow">
-      <div className="container mx-auto flex items-center justify-between px-4 py-4">
-        <Link href="/home" className="hover:text-blue-600 font-bold text-lg">
-           <Image src={logo} alt="NextCart Logo" width={120} height={40} />
+    <nav className="sticky top-0 z-50 bg-white shadow-md backdrop-blur-md">
+      <div className="max-w-[1440px] mx-auto flex items-center justify-between px-4 py-3 sm:px-6 md:py-4">
+        {/* Logo */}
+        <Link href="/home" className="flex items-center gap-2 group">
+          <Image
+            src={logo}
+            alt="NextCart Logo"
+            width={120}
+            height={40}
+            className="object-contain transition-transform duration-300 group-hover:scale-105"
+          />
         </Link>
 
-        <div className="hidden md:flex items-center space-x-6">
-          <Link href="/home" className=" font-medium hover:text--600">
-            Home
-          </Link>
-          <Link href="/products" className="font-medium hover:text-blue-600">
-            Products
-          </Link>
-          <Link href="/checkout" className="font-medium hover:text-blue-600">
-            Checkout
-          </Link>
+        {/* Desktop Links */}
+        <div className="hidden md:flex items-center space-x-8">
+          {[
+            { href: "/home", label: "Home" },
+            { href: "/products", label: "Products" },
+            { href: "/checkout", label: "Checkout" },
+          ].map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="relative font-medium text-gray-800 transition duration-300 hover:text-blue-600
+                         after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[2px] after:bg-blue-600
+                         hover:after:w-full after:transition-all after:duration-300"
+            >
+              {link.label}
+            </Link>
+          ))}
         </div>
 
+        {/* Right Section */}
         <div className="flex items-center space-x-4">
+          {/* User */}
           {isSignedIn ? (
             <Link
               href="/profile"
-              className="flex items-center space-x-2 hover:text-blue-600"
+              className="flex items-center space-x-2 hover:text-blue-600 transition-colors duration-300"
             >
               <User2Icon className="h-6 w-6" />
               <span className="hidden md:inline font-medium">{userName}</span>
             </Link>
           ) : (
-            <Link href="/signin" className="hover:text-blue-600">
+            <Link
+              href="/signin"
+              className="font-medium text-gray-800 hover:text-blue-600 transition-colors duration-300 text-sm sm:text-base"
+            >
               Sign In
             </Link>
           )}
 
-          <Link href="/checkout" className="relative">
+          {/* Cart */}
+          <Link
+            href="/checkout"
+            className="relative hover:scale-110 transition-transform duration-300"
+          >
             <ShoppingCartIcon className="h-6 w-6" />
             {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+              <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white animate-pulse">
                 {cartCount}
               </span>
             )}
           </Link>
 
+          {/* Mobile Menu Button */}
           <Button
             variant="ghost"
-            className="md:hidden"
+            size="icon"
+            className="md:hidden hover:bg-gray-100 transition duration-300"
             onClick={() => setMobileOpen((prev) => !prev)}
           >
             {mobileOpen ? (
@@ -122,38 +143,46 @@ export const Navbar = () => {
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <nav className="md:hidden bg-white shadow-md">
-          <ul className="flex flex-col p-4 space-y-2">
-            <li>
-              <Link href="/home" className="block hover:text-blue-600">
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link href="/products" className="block hover:text-blue-600">
-                Products
-              </Link>
-            </li>
-            <li>
-              <Link href="/checkout" className="block hover:text-blue-600">
-                Checkout
-              </Link>
-            </li>
+        <div className="md:hidden bg-white border-t border-gray-200 shadow-md transition-all duration-300">
+          <ul className="flex flex-col p-4 space-y-3 text-center">
+            {[
+              { href: "/home", label: "Home" },
+              { href: "/products", label: "Products" },
+              { href: "/checkout", label: "Checkout" },
+            ].map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className="block py-2 font-medium text-gray-800 hover:text-blue-600 transition-colors duration-300"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
             {isSignedIn ? (
               <li>
-                <Link href="/profile" className="block hover:text-blue-600">
+                <Link
+                  href="/profile"
+                  className="block py-2 font-medium hover:text-blue-600"
+                  onClick={() => setMobileOpen(false)}
+                >
                   {userName}
                 </Link>
               </li>
             ) : (
               <li>
-                <Link href="/signin" className="block hover:text-blue-600">
+                <Link
+                  href="/signin"
+                  className="block py-2 font-medium hover:text-blue-600"
+                  onClick={() => setMobileOpen(false)}
+                >
                   Sign In
                 </Link>
               </li>
             )}
           </ul>
-        </nav>
+        </div>
       )}
     </nav>
   );

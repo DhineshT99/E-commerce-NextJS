@@ -1,9 +1,7 @@
-import Image from "next/image";
 import { stripe } from "@/lib/stripe";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { Carousel } from "@/components/carousel";
 import Stripe from "stripe";
+import { AnimatedHeroContent } from "@/components/ui/animated-hero-content";
+import { AnimatedCarouselSection } from "@/components/ui/animated-hero-carousel";
 
 export default async function Home() {
   const products = await stripe.products.list({
@@ -11,47 +9,27 @@ export default async function Home() {
     limit: 5,
   });
 
-    const filteredProducts = products.data.filter(
+  const filteredProducts = products.data.filter(
     (product): product is Stripe.Product & { default_price: Stripe.Price } =>
       typeof product.default_price === "object" && product.default_price !== null
   );
 
+  const heroImageUrl =
+    products.data.length > 0 && products.data[0].images.length > 0
+      ? products.data[0].images[0]
+      : null;
+
   return (
-    <div>
-      <section className="rounded bg-neutral-100 py-8 sm:py-12">
-        <div className="mx-auto grid grid-cols-1 items-center justify-items-center gap-8 px-8 sm:px-16 md:grid-cols-2">
-          <div className="max-w-md space-y-4">
-            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-              Welcome to Next Cart!
-            </h2>
-            <p className="text-neutral-600">
-              Discover the latest products at the best prices.
-            </p>
-            <Button
-              asChild
-              variant="default"
-              className="inline-flex items-center justify-center rounded-full px-6 py-3 bg-black text-white"
-            >
-              <Link
-                href="/products"
-                className="inline-flex items-center justify-center rounded-full px-6 py-3"
-              >
-                Browse All Products
-              </Link>
-            </Button>
-          </div>
-          <Image
-            alt="Hero Image"
-            src={products.data[0].images[0]}
-            className="rounded"
-            width={450}
-            height={450}
-          />
+    <div className="min-h-screen bg-white overflow-hidden">
+      {/* Hero Section */}
+      <section className="w-full bg-neutral-100 py-10 sm:py-14 md:py-20">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-6 sm:px-10 md:grid-cols-2 md:gap-16 lg:gap-20">
+          <AnimatedHeroContent heroImageUrl={heroImageUrl} />
         </div>
       </section>
-      <section className="py-8">
-        <Carousel products={filteredProducts} />
-      </section>
+
+      {/* Animated Carousel Section (client) */}
+      <AnimatedCarouselSection products={filteredProducts} />
     </div>
   );
 }

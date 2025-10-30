@@ -27,11 +27,22 @@ export const Carousel = ({ products }: Props) => {
   useEffect(() => {
     if (products && products.length > 0) {
       setShuffledProducts(shuffleArray(products));
-      console.log("All products (shuffled):", products);
+      setCurrent(0); // reset to first slide
     }
   }, [products]);
 
-  if (!shuffledProducts || shuffledProducts.length === 0) {
+  // ⏱️ Auto-slide every 3 seconds
+  useEffect(() => {
+    if (shuffledProducts.length === 0) return;
+
+    const interval = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % shuffledProducts.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [shuffledProducts]);
+
+  if (shuffledProducts.length === 0) {
     return (
       <div className="p-8 text-center text-gray-500">
         No products available.
@@ -51,7 +62,7 @@ export const Carousel = ({ products }: Props) => {
   const price = product.default_price as Stripe.Price | null;
 
   return (
-    <div className="mx-auto  w-[100%]">
+    <div className="mx-auto w-full">
       {/* Heading */}
       <div className="text-center mb-6">
         <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 via-white-500 to-gray-400">
@@ -103,7 +114,9 @@ export const Carousel = ({ products }: Props) => {
 
         {/* Product Info Overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-4 bg-black/40 text-center backdrop-blur-sm">
-          <h3 className="text-xl font-semibold text-white mb-1">{product.name}</h3>
+          <h3 className="text-xl font-semibold text-white mb-1">
+            {product.name}
+          </h3>
           {price?.unit_amount && (
             <p className="text-lg text-white">
               Rs.{(price.unit_amount / 100).toFixed(2)}

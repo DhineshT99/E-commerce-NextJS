@@ -21,23 +21,46 @@ export const ProductList = ({ products }: Props) => {
   });
 
   return (
-    <div>
+    <div className="w-full px-4 sm:px-6 lg:px-10">
+      {/* 🔍 Search Bar */}
       <div className="mb-6 flex justify-center">
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search products..."
-          className="w-full max-w-md rounded border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full max-w-md rounded-lg border border-gray-300 px-4 py-2 
+                     text-sm sm:text-base focus:outline-none focus:ring-2 
+                     focus:ring-blue-500 shadow-sm"
         />
       </div>
-      <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+      {/* 🛒 Product Grid */}
+      <ul
+        className="
+          mt-6 
+          grid 
+          grid-cols-1 
+          gap-6 
+          sm:grid-cols-2 
+          md:grid-cols-3 
+          lg:grid-cols-4 
+          xl:grid-cols-5
+        "
+      >
         {filteredProduct.map((product, key) => (
-          <li key={key}>
+          <li key={key} className="flex justify-center">
             <ProductCard product={product} />
           </li>
         ))}
       </ul>
+
+      {/* 🪄 No Results Message */}
+      {filteredProduct.length === 0 && (
+        <p className="text-center text-gray-500 mt-10 text-sm sm:text-base">
+          No products found. Try a different search.
+        </p>
+      )}
     </div>
   );
 };

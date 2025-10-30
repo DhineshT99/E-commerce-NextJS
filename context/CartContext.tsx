@@ -1,6 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, ReactNode,useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+  useCallback,
+} from "react";
 
 export interface CartItem {
   id: string;
@@ -40,9 +47,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       const existing = prev.find((i) => i.id === item.id);
       if (existing) {
         return prev.map((i) =>
-          i.id === item.id
-            ? { ...i, quantity: i.quantity + item.quantity }
-            : i
+          i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i
         );
       }
       return [...prev, item];
@@ -58,10 +63,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         .filter((item) => item.quantity > 0)
     );
   };
-const clearCart = useCallback(() => {
-  setItems([]);
-  localStorage.removeItem("cart");
-}, []);
+  const clearCart = useCallback(() => {
+    setItems([]);
+    localStorage.removeItem("cart");
+  }, []);
 
   return (
     <CartContext.Provider value={{ items, addItem, removeItem, clearCart }}>

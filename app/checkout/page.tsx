@@ -3,15 +3,25 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCart } from "@/context/CartContext";
+import { useTransition } from "react";
 import { checkoutAction } from "./checkout-action";
 
-
 export default function CheckoutPage() {
-  const { items, removeItem, addItem} = useCart();
+  const { items, removeItem, addItem } = useCart();
+  const [isPending, startTransition] = useTransition();
+
   const total = items.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
   );
+
+  const handleCheckout = async () => {
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.append("items", JSON.stringify(items));
+      await checkoutAction(formData);
+    });
+  };
 
   if (items.length === 0) {
     return (
@@ -35,7 +45,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between">
                   <span className="font-medium">{item.name}</span>
                   <span className="font-semibold">
-                    ${((item.price * item.quantity) / 100).toFixed(2)}
+                    ₹{((item.price * item.quantity) / 100).toFixed(2)}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -50,7 +60,7 @@ export default function CheckoutPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                     className="bg-black text-white"
+                    className="bg-black text-white"
                     onClick={() => addItem({ ...item, quantity: 1 })}
                   >
                     +
@@ -64,12 +74,16 @@ export default function CheckoutPage() {
           </div>
         </CardContent>
       </Card>
-      <form action={checkoutAction} className="max-w-md mx-auto">
-        <input type="hidden" name="items" value={JSON.stringify(items)} />
-        <Button type="submit" variant="default"  className="bg-black text-white w-full">
-          Proceed to Payment
+      <div className="text-center">
+        <Button
+          onClick={handleCheckout}
+          disabled={isPending}
+          variant="default"
+          className="bg-black text-white w-50"
+        >
+          {isPending ? "Processing..." : "Proceed to Payment"}
         </Button>
-      </form>
+      </div>
     </div>
   );
 }

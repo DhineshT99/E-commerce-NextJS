@@ -3,23 +3,34 @@
 import { useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import { supabase } from "@/lib/supabase";
-import Link from "next/link";
 
 export default function SuccessPage() {
   const { clearCart, items } = useCart();
 
   useEffect(() => {
     async function placeOrder() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user) return;
+
       const total = items.reduce((a, i) => a + i.price * i.quantity, 0);
-      await supabase.from("orders").insert({
+
+      const { error } = await supabase.from("orders").insert({
         user_id: user.id,
         total,
-        items,
+        items, // JSON array for jsonb column
       });
-      clearCart();
+
+      if (error) {
+        console.error("Error saving order:", error);
+      } else {
+        console.log("Order saved:", { items, total });
+        clearCart();
+      }
     }
+
     placeOrder();
   }, []);
 
